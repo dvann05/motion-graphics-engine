@@ -1,0 +1,118 @@
+name: Generate Motion Graphic
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Judul Utama Video (Title)'
+        required: true
+        default: 'NEXT-GEN MOTION'
+        type: string
+      subtitle:
+        description: 'Sub-judul / Deskripsi Singkat'
+        required: false
+        default: 'Code-driven video animations at 60 FPS'
+        type: string
+      badge:
+        description: 'Label Badge Atas (Opsional)'
+        required: false
+        default: 'MOTION ENGINE'
+        type: string
+      format:
+        description: 'Rasio Aspek Video'
+        required: true
+        default: '9:16'
+        type: choice
+        options:
+          - '9:16'
+          - '16:9'
+          - '1:1'
+      scene:
+        description: 'Pilihan Gaya Template Scene'
+        required: true
+        default: 'tech_intro'
+        type: choice
+        options:
+          - 'tech_intro'
+          - 'promo_card'
+      duration:
+        description: 'Durasi Video (dalam detik)'
+        required: false
+        default: '6.0'
+        type: string
+      fps:
+        description: 'Frame Rate (FPS)'
+        required: false
+        default: '30'
+        type: choice
+        options:
+          - '30'
+          - '60'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install FFmpeg & Fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-roboto
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Render Motion Graphics Video
+        run: |
+          python -m engines.python_ffmpeg.cli \
+            --scene "${{ github.event.inputs.scene }}" \
+            --format "${{ github.event.inputs.format }}" \
+            --title "${{ github.event.inputs.title }}" \
+            --subtitle "${{ github.event.inputs.subtitle }}" \
+            --badge "${{ github.event.inputs.badge }}" \
+            --duration "${{ github.event.inputs.duration }}" \
+            --fps "${{ github.event.inputs.fps }}" \
+            --preset "fast" \
+            --crf 18 \
+            --output "output/motion_graphic_${{ github.event.inputs.format }}.mp4"
+
+          ls -lh output/
+
+      - name: Upload Video Artifact (Download Langsung)
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ github.event.inputs.format }}-${{ github.run_id }}
+          path: output/*.mp4
+          retention-days: 30
+
+      - name: Create GitHub Release with Video
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: video-run-${{ github.run_number }}
+          name: "Video: ${{ github.event.inputs.title }} (${{ github.event.inputs.format }})"
+          body: |
+            ### 🎬 Video Motion Graphics Selesai Dibuat!
+            - **Judul**: ${{ github.event.inputs.title }}
+            - **Sub-judul**: ${{ github.event.inputs.subtitle }}
+            - **Rasio**: ${{ github.event.inputs.format }}
+            - **Template**: ${{ github.event.inputs.scene }}
+            - **Durasi**: ${{ github.event.inputs.duration }} detik @ ${{ github.event.inputs.fps }} FPS
+
+            *Unduh file `.mp4` di bawah ini langsung ke HP atau komputer Anda!*
+          files: output/*.mp4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

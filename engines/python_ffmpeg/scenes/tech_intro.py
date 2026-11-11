@@ -10,7 +10,9 @@ from ..core.canvas import draw_cyber_grid, draw_neon_glow, draw_rounded_card
 from ..core.particles import ParticleField
 from ..core.typography import load_font, draw_centered_text, draw_staggered_text, draw_badge, get_text_dimensions
 
-def build_tech_intro(width: int = 1080, height: int = 1920, fps: int = 30, duration_sec: float = 6.0):
+def build_tech_intro(width: int = 1080, height: int = 1920, fps: int = 30, duration_sec: float = 6.0,
+                     title: str = "NEXT-GEN MOTION", subtitle: str = "Code-driven video animations at 60 FPS",
+                     badge: str = "MOTION CRAFT ENGINE"):
     total_frames = int(fps * duration_sec)
     particles = ParticleField(count=45, width=width, height=height)
 
@@ -42,26 +44,25 @@ def build_tech_intro(width: int = 1080, height: int = 1920, fps: int = 30, durat
 
             # 3. Entrance: Top Pill Badge (0.0s - 1.2s)
             badge_t = interpolate(t, (0.2, 1.2), (0.0, 1.0), easing=ease_out_back)
-            if badge_t > 0:
+            if badge_t > 0 and badge:
                 badge_y = int(interpolate(badge_t, (0.0, 1.0), (height * 0.18 - 40, height * 0.18)))
-                draw_badge(draw, width // 2, badge_y, "MOTION CRAFT ENGINE v1.0", font_badge,
+                draw_badge(draw, width // 2, badge_y, badge.upper(), font_badge,
                            bg_color=(30, 58, 138, 220), border_color=(96, 165, 250, 255))
 
             # 4. Hero Kinetic Headline (0.5s - 2.5s)
             hero_t = interpolate(t, (0.6, 2.0), (0.0, 1.0), easing=ease_out_cubic)
-            if hero_t > 0:
-                headline_text = "NEXT-GEN MOTION"
-                hw, hh = get_text_dimensions(draw, headline_text, font_hero)
+            if hero_t > 0 and title:
+                hw, hh = get_text_dimensions(draw, title, font_hero)
                 start_x = width // 2 - hw // 2
                 start_y = int(height * 0.26)
-                draw_staggered_text(draw, start_x, start_y, headline_text, font_hero, hero_t, color_rgb=(255, 255, 255))
+                draw_staggered_text(draw, start_x, start_y, title, font_hero, hero_t, color_rgb=(255, 255, 255))
 
             # Sub-headline
             sub_t = interpolate(t, (1.2, 2.4), (0.0, 1.0), easing=ease_out_cubic)
-            if sub_t > 0:
+            if sub_t > 0 and subtitle:
                 sub_alpha = int(sub_t * 220)
                 sub_y = int(height * 0.33 + (1.0 - sub_t) * 15)
-                draw_centered_text(draw, width // 2, sub_y, "Code-driven video animations at 60 FPS",
+                draw_centered_text(draw, width // 2, sub_y, subtitle,
                                    font_body, fill=(148, 163, 184, sub_alpha))
 
             # 5. Central Feature Glassmorphism Card (1.8s - 4.5s)

@@ -22,6 +22,9 @@ def parse_args():
                         help="Video aspect ratio format (9:16 vertical, 16:9 landscape, 1:1 square)")
     parser.add_argument("--fps", type=int, default=30, help="Frames per second (default: 30)")
     parser.add_argument("--duration", type=float, default=5.0, help="Duration in seconds (default: 5.0)")
+    parser.add_argument("--title", type=str, default=None, help="Main title text for the video")
+    parser.add_argument("--subtitle", type=str, default=None, help="Secondary text / description")
+    parser.add_argument("--badge", type=str, default=None, help="Top badge / tag label")
     parser.add_argument("--output", type=str, default="output/rendered_motion.mp4",
                         help="Output mp4 destination file path")
     parser.add_argument("--audio", type=str, default=None, help="Optional background audio / VO track path")
@@ -34,15 +37,30 @@ def main():
     width, height = ASPECT_RATIOS[args.format]
     builder_fn = AVAILABLE_SCENES[args.scene]
 
+    kwargs = {
+        "width": width,
+        "height": height,
+        "fps": args.fps,
+        "duration_sec": args.duration,
+    }
+    if args.title:
+        kwargs["title"] = args.title
+    if args.subtitle:
+        kwargs["subtitle"] = args.subtitle
+    if args.badge:
+        kwargs["badge"] = args.badge
+
     print(f"==================================================")
     print(f"🎬 Motion Craft Engine")
     print(f"• Scene    : {args.scene}")
+    print(f"• Title    : {args.title or '(Default)'}")
+    print(f"• Subtitle : {args.subtitle or '(Default)'}")
     print(f"• Format   : {args.format} ({width}x{height})")
     print(f"• Duration : {args.duration}s @ {args.fps} FPS")
     print(f"• Target   : {args.output}")
     print(f"==================================================")
 
-    frames, total_frames = builder_fn(width=width, height=height, fps=args.fps, duration_sec=args.duration)
+    frames, total_frames = builder_fn(**kwargs)
     render_to_mp4(
         frame_generator=frames,
         total_frames=total_frames,

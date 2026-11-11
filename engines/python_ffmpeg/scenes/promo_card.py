@@ -10,7 +10,9 @@ from ..core.canvas import draw_rounded_card, draw_neon_glow
 from ..core.particles import ParticleField
 from ..core.typography import load_font, draw_centered_text, draw_badge
 
-def build_promo_card(width: int = 1080, height: int = 1920, fps: int = 30, duration_sec: float = 5.0):
+def build_promo_card(width: int = 1080, height: int = 1920, fps: int = 30, duration_sec: float = 5.0,
+                     title: str = "Automated Pipeline", subtitle: str = "Built with Python & FFmpeg",
+                     badge: str = "NEW UPDATE", stat_text: str = "99% Faster"):
     total_frames = int(fps * duration_sec)
     particles = ParticleField(count=30, width=width, height=height)
     scale_factor = width / 1080.0
@@ -32,8 +34,8 @@ def build_promo_card(width: int = 1080, height: int = 1920, fps: int = 30, durat
 
             # Top Badge
             badge_t = interpolate(t, (0.2, 1.0), (0.0, 1.0), easing=ease_out_cubic)
-            if badge_t > 0:
-                draw_badge(draw, width // 2, int(height * 0.22), "LAUNCH ANNOUNCEMENT", font_badge,
+            if badge_t > 0 and badge:
+                draw_badge(draw, width // 2, int(height * 0.22), badge.upper(), font_badge,
                            bg_color=(16, 185, 129, 220), border_color=(52, 211, 153, 255))
 
             # Floating Card
@@ -53,15 +55,16 @@ def build_promo_card(width: int = 1080, height: int = 1920, fps: int = 30, durat
 
                 draw = ImageDraw.Draw(img)
 
-                # Animated Counter: from 0 to 99%
+                # Animated Counter / Stat Text
                 counter_t = interpolate(t, (1.2, 3.2), (0.0, 1.0), easing=ease_out_cubic)
                 counter_val = int(counter_t * 99)
+                display_stat = f"{counter_val}% Faster" if stat_text == "99% Faster" else stat_text
 
-                draw_centered_text(draw, cx, cy - int(60 * scale_factor), f"{counter_val}% Faster",
+                draw_centered_text(draw, cx, cy - int(60 * scale_factor), display_stat,
                                    font_huge, fill=(244, 63, 94, 255))
-                draw_centered_text(draw, cx, cy + int(20 * scale_factor), "Automated Video Pipeline",
+                draw_centered_text(draw, cx, cy + int(20 * scale_factor), title,
                                    font_title, fill=(255, 255, 255, 255))
-                draw_centered_text(draw, cx, cy + int(80 * scale_factor), "Built with Python & FFmpeg",
+                draw_centered_text(draw, cx, cy + int(80 * scale_factor), subtitle,
                                    font_body, fill=(148, 163, 184, 255))
 
             # CTA Button (Entrance 2.8s)
