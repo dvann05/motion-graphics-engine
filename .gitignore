@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node & Remotion
+node_modules/
+.remotion/
+package-lock.json
+
+# Rendered media outputs (keep sample directory clean)
+output/*.mp4
+output/*.png
+output/*.jpg
+output/*.gif
+!output/.gitkeep
+
+# Environment & IDE
+.env
+.venv/
+env/
+.idea/
+.vscode/
+*.swp
+.DS_Store
